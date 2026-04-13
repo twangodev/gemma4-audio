@@ -25,7 +25,8 @@ jobs:
           - librispeech:test-clean
           - librispeech:test-other
     env:
-      HF_HOME: /home/runner/.cache/huggingface
+      HF_HUB_CACHE: /home/runner/.cache/huggingface/hub
+      HF_DATASETS_CACHE: /home/runner/.cache/huggingface/datasets
     steps:
       - uses: actions/checkout@v4
 
@@ -35,7 +36,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /home/runner/.cache/huggingface/hub
-          key: hf-${{ runner.os }}-${{ hashFiles('uv.lock') }}-${{ matrix.model }}
+          key: hf-model-${{ matrix.model }}
+
+      - name: Cache HuggingFace datasets
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/huggingface/datasets
+          key: hf-datasets-${{ matrix.dataset }}
 
       - name: Run benchmark (${{ matrix.model }} / ${{ matrix.dataset }})
         env:
