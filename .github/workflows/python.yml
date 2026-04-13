@@ -43,7 +43,7 @@ jobs:
         run: uv sync
 
       - name: Install CPU-only PyTorch
-        run: uv pip install torch torchvision torchcodec --torch-backend=cpu
+        run: uv pip install --reinstall torch torchvision torchcodec --torch-backend=cpu
 
       - name: Run benchmark (${{ matrix.model }} / ${{ matrix.dataset }})
         env:
