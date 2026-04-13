@@ -20,6 +20,7 @@ class EvalConfig:
     output_json: str | None = None
     output_csv: str | None = None
     quiet: bool = False
+    streaming: bool = False
     prompt: str = field(default=DEFAULT_PROMPT)
 
 

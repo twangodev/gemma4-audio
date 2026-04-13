@@ -26,7 +26,6 @@ jobs:
           - librispeech:test-other
     env:
       HF_HUB_CACHE: /home/runner/.cache/huggingface/hub
-      HF_DATASETS_CACHE: /home/runner/.cache/huggingface/datasets
     steps:
       - uses: actions/checkout@v4
 
@@ -38,12 +37,6 @@ jobs:
           path: /home/runner/.cache/huggingface/hub
           key: hf-model-${{ matrix.model }}
 
-      - name: Cache HuggingFace datasets
-        uses: actions/cache@v4
-        with:
-          path: /home/runner/.cache/huggingface/datasets
-          key: hf-datasets-${{ matrix.dataset }}
-
       - name: Run benchmark (${{ matrix.model }} / ${{ matrix.dataset }})
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -52,6 +45,7 @@ jobs:
             --model "${{ matrix.model }}" \
             --benchmark "${{ matrix.dataset }}" \
             --backend transformers \
+            --streaming \
             --limit "${{ inputs.limit || 5 }}" \
             --output-json results.json \
             --output-csv results.csv

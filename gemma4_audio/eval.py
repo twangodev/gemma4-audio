@@ -21,7 +21,7 @@ def run_eval(
     # Setup dataset
     if dataset is None:
         dataset = get_dataset(config.dataset)
-        dataset.load(config.split, seed=config.seed)
+        dataset.load(config.split, seed=config.seed, streaming=config.streaming)
 
     # Setup backend
     if backend is None:
@@ -37,7 +37,7 @@ def run_eval(
     if config.limit is not None:
         samples_iter = itertools.islice(samples_iter, config.limit)
 
-    total = config.limit if config.limit is not None else len(dataset)
+    total = config.limit
 
     progress = tqdm(
         samples_iter,

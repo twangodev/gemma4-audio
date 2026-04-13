@@ -34,6 +34,7 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
     eval_parser.add_argument("--output-json", default=None, help="Path to write JSON results")
     eval_parser.add_argument("--output-csv", default=None, help="Path to write CSV results")
     eval_parser.add_argument("--quiet", action="store_true", help="Suppress stdout output")
+    eval_parser.add_argument("--streaming", action="store_true", help="Stream dataset instead of downloading")
     eval_parser.add_argument("--prompt", default=DEFAULT_PROMPT, help="Transcription prompt")
 
     args = parser.parse_args(argv)
@@ -57,6 +58,7 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
         output_json=args.output_json,
         output_csv=args.output_csv,
         quiet=args.quiet,
+        streaming=args.streaming,
         prompt=args.prompt,
     )
 

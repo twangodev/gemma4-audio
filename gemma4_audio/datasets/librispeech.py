@@ -13,9 +13,9 @@ class LibriSpeechDataset:
     VALID_SPLITS = {"test-clean", "test-other", "dev-clean", "dev-other"}
 
     def __init__(self) -> None:
-        self._data: hf_datasets.Dataset | None = None
+        self._data: hf_datasets.Dataset | hf_datasets.IterableDataset | None = None
 
-    def load(self, split: str, seed: int = 42) -> None:
+    def load(self, split: str, seed: int = 42, *, streaming: bool = False) -> None:
         if split not in self.VALID_SPLITS:
             raise ValueError(
                 f"Invalid split '{split}' for LibriSpeech. "
@@ -24,6 +24,7 @@ class LibriSpeechDataset:
         self._data = hf_datasets.load_dataset(
             "openslr/librispeech_asr",
             split=split.replace("-", "."),
+            streaming=streaming,
         ).shuffle(seed=seed)
 
     def __iter__(self) -> Iterator[Sample]:
@@ -40,7 +41,3 @@ class LibriSpeechDataset:
                 reference=row["text"].lower(),
             )
 
-    def __len__(self) -> int:
-        if self._data is None:
-            raise RuntimeError("Call load() before getting length.")
-        return len(self._data)
