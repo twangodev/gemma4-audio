@@ -1,0 +1,58 @@
+name: Python
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: Samples per split
+        type: number
+        default: 5
+
+jobs:
+  benchmark:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        model:
+          - google/gemma-4-E2B-it
+          - google/gemma-4-E4B-it
+        dataset:
+          - librispeech:test-clean
+          - librispeech:test-other
+    env:
+      HF_HOME: /home/runner/.cache/huggingface
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Cache HuggingFace model
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/huggingface/hub
+          key: hf-${{ runner.os }}-${{ hashFiles('uv.lock') }}-${{ matrix.model }}
+
+      - name: Run benchmark (${{ matrix.model }} / ${{ matrix.dataset }})
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          uv run g4 eval \
+            --model "${{ matrix.model }}" \
+            --benchmark "${{ matrix.dataset }}" \
+            --backend transformers \
+            --limit "${{ inputs.limit || 5 }}" \
+            --output-json results.json \
+            --output-csv results.csv
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results-${{ strategy.job-index }}
+          path: |
+            results.json
+            results.csv
