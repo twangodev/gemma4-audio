@@ -673,7 +673,7 @@ http = [
 [[package]]
 name = "gemma4-audio"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "accelerate" },
     { name = "datasets" },
