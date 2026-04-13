@@ -2,9 +2,44 @@
 name = "gemma4-asr"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "accelerate>=1.13.0",
+    "datasets>=4.8.4",
+    "hf-transfer>=0.1.9",
+    "jiwer>=4.0.0",
+    "librosa>=0.11.0",
+    "numpy>=2.4.4",
+    "pillow>=12.2.0",
+    "sacrebleu>=2.6.0",
+    "torch>=2.11.0",
+    "torchcodec>=0.11.0",
+    "torchvision>=0.26.0",
+    "tqdm>=4.67.3",
+    "transformers>=5.5.3",
+    "whisper-normalizer>=0.1.12",
+]
+
+[project.optional-dependencies]
+vllm = [
+    "vllm",
+]
+mlx = [
+    "mlx-vlm>=0.4.4",
+]
+quantization = [
+    "bitsandbytes>=0.49.2",
+]
+
+[project.scripts]
+gemma4-asr = "gemma4_asr.cli:main"
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests that download data or require GPU (deselect with '-m \"not integration\"')",
+]
 
 [dependency-groups]
 dev = [
+    "pytest>=9.0.3",
     "ruff>=0.15.10",
 ]
