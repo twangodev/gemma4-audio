@@ -31,17 +31,25 @@ jobs:
 
       - uses: astral-sh/setup-uv@v4
 
+      - uses: FedericoCarboni/setup-ffmpeg@v3
+
       - name: Cache HuggingFace model
         uses: actions/cache@v4
         with:
           path: /home/runner/.cache/huggingface/hub
           key: hf-model-${{ matrix.model }}
 
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install CPU-only PyTorch
+        run: uv pip install torch torchvision torchcodec --torch-backend=cpu
+
       - name: Run benchmark (${{ matrix.model }} / ${{ matrix.dataset }})
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          uv run g4 eval \
+          uv run --no-sync g4 eval \
             --model "${{ matrix.model }}" \
             --benchmark "${{ matrix.dataset }}" \
             --backend transformers \
