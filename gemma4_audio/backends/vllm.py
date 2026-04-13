@@ -2,7 +2,7 @@ import time
 
 import numpy as np
 
-from gemma4_asr.config import TranscriptionResult
+from gemma4_audio.config import TranscriptionResult
 
 
 class VLLMBackend:

@@ -2,7 +2,7 @@ import csv
 import json
 from dataclasses import asdict
 
-from gemma4_asr.config import EvalResult
+from gemma4_audio.config import EvalResult
 
 
 def format_stdout(result: EvalResult) -> str:

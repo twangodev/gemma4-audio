@@ -2,13 +2,13 @@ import itertools
 
 from tqdm import tqdm
 
-from gemma4_asr.backends import select_backend
-from gemma4_asr.backends.base import InferenceBackend
-from gemma4_asr.config import EvalConfig, EvalResult
-from gemma4_asr.datasets import get_dataset
-from gemma4_asr.datasets.base import Dataset
-from gemma4_asr.metrics import compute_corpus_metrics, compute_sample_metrics
-from gemma4_asr.output import format_stdout, write_csv, write_json
+from gemma4_audio.backends import select_backend
+from gemma4_audio.backends.base import InferenceBackend
+from gemma4_audio.config import EvalConfig, EvalResult
+from gemma4_audio.datasets import get_dataset
+from gemma4_audio.datasets.base import Dataset
+from gemma4_audio.metrics import compute_corpus_metrics, compute_sample_metrics
+from gemma4_audio.output import format_stdout, write_csv, write_json
 
 
 def run_eval(

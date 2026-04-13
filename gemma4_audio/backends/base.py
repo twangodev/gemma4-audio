@@ -2,7 +2,7 @@ from typing import Protocol, runtime_checkable
 
 import numpy as np
 
-from gemma4_asr.config import TranscriptionResult
+from gemma4_audio.config import TranscriptionResult
 
 
 @runtime_checkable

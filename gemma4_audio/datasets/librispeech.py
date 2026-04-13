@@ -3,8 +3,8 @@ from typing import Iterator
 import datasets as hf_datasets
 import numpy as np
 
-from gemma4_asr.audio import normalize_audio
-from gemma4_asr.datasets.base import Sample
+from gemma4_audio.audio import normalize_audio
+from gemma4_audio.datasets.base import Sample
 
 
 class LibriSpeechDataset:

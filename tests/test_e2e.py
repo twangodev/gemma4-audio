@@ -5,10 +5,10 @@ from unittest.mock import MagicMock
 
 import numpy as np
 
-from gemma4_asr.cli import parse_args
-from gemma4_asr.config import TranscriptionResult
-from gemma4_asr.datasets.base import Sample
-from gemma4_asr.eval import run_eval
+from gemma4_audio.cli import parse_args
+from gemma4_audio.config import TranscriptionResult
+from gemma4_audio.datasets.base import Sample
+from gemma4_audio.eval import run_eval
 
 
 def test_e2e_with_mock():

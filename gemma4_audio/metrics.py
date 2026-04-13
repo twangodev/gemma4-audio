@@ -2,7 +2,7 @@ import jiwer
 import numpy as np
 from whisper_normalizer.english import EnglishTextNormalizer
 
-from gemma4_asr.config import AudioDurationStats, CorpusMetrics, LatencyStats, SampleResult
+from gemma4_audio.config import AudioDurationStats, CorpusMetrics, LatencyStats, SampleResult
 
 _normalizer = EnglishTextNormalizer()
 

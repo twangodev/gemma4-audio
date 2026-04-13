@@ -1,13 +1,13 @@
 import argparse
 
-from gemma4_asr.config import DEFAULT_PROMPT, EvalConfig
+from gemma4_audio.config import DEFAULT_PROMPT, EvalConfig
 
 
 def parse_args(argv: list[str] | None = None) -> EvalConfig:
     """Parse CLI arguments and return an EvalConfig."""
     parser = argparse.ArgumentParser(
-        prog="gemma4-asr",
-        description="Gemma 4 ASR evaluation framework",
+        prog="g4",
+        description="Gemma 4 audio toolkit",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -15,6 +15,10 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
     eval_parser.add_argument("--model", required=True, help="HuggingFace model ID")
     eval_parser.add_argument("--dataset", default="librispeech", help="Dataset name")
     eval_parser.add_argument("--split", default="test-clean", help="Dataset split")
+    eval_parser.add_argument(
+        "--benchmark", default=None,
+        help="Dataset:split shorthand (e.g. librispeech:test-clean). Overrides --dataset and --split.",
+    )
     eval_parser.add_argument(
         "--backend", default="auto",
         choices=["auto", "vllm", "mlx", "transformers"],
@@ -34,10 +38,18 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
 
     args = parser.parse_args(argv)
 
+    dataset = args.dataset
+    split = args.split
+    if args.benchmark:
+        parts = args.benchmark.split(":", 1)
+        if len(parts) != 2:
+            parser.error("--benchmark must be in dataset:split format (e.g. librispeech:test-clean)")
+        dataset, split = parts
+
     return EvalConfig(
         model=args.model,
-        dataset=args.dataset,
-        split=args.split,
+        dataset=dataset,
+        split=split,
         backend=args.backend,
         quantization=args.quantization,
         limit=args.limit,
@@ -51,5 +63,5 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
 
 def main(argv: list[str] | None = None) -> None:
     config = parse_args(argv)
-    from gemma4_asr.eval import run_eval
+    from gemma4_audio.eval import run_eval
     run_eval(config)

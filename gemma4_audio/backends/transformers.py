@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from transformers import AutoModelForMultimodalLM, AutoProcessor
 
-from gemma4_asr.config import TranscriptionResult
+from gemma4_audio.config import TranscriptionResult
 
 
 class TransformersBackend:

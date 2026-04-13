@@ -1,6 +1,6 @@
 import pytest
 
-from gemma4_asr.metrics import compute_corpus_metrics, compute_sample_metrics
+from gemma4_audio.metrics import compute_corpus_metrics, compute_sample_metrics
 
 
 def test_perfect_transcription():

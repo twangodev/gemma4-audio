@@ -3,8 +3,8 @@ import platform
 
 import torch
 
-from gemma4_asr.backends.base import InferenceBackend
-from gemma4_asr.backends.transformers import TransformersBackend
+from gemma4_audio.backends.base import InferenceBackend
+from gemma4_audio.backends.transformers import TransformersBackend
 
 
 def _try_import(module_name: str) -> bool:
@@ -21,11 +21,11 @@ BACKEND_REGISTRY: dict[str, type] = {
 }
 
 if _try_import("vllm"):
-    from gemma4_asr.backends.vllm import VLLMBackend
+    from gemma4_audio.backends.vllm import VLLMBackend
     BACKEND_REGISTRY["vllm"] = VLLMBackend
 
 if _try_import("mlx_vlm"):
-    from gemma4_asr.backends.mlx import MLXBackend
+    from gemma4_audio.backends.mlx import MLXBackend
     BACKEND_REGISTRY["mlx"] = MLXBackend
 
 

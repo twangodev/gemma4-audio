@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from gemma4_asr.datasets.base import Sample
+from gemma4_audio.datasets.base import Sample
 
 
 @pytest.fixture

@@ -671,7 +671,7 @@ http = [
 ]
 
 [[package]]
-name = "gemma4-asr"
+name = "gemma4-audio"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
