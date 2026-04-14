@@ -25,6 +25,7 @@ class MLXBackend:
         audio: np.ndarray,
         sample_rate: int,
         prompt: str,
+        max_output_tokens: int = 512,
     ) -> TranscriptionResult:
         if self._model is None or self._processor is None:
             raise RuntimeError("Call load_model() before transcribe().")
@@ -46,7 +47,9 @@ class MLXBackend:
         )
 
         start = time.perf_counter()
-        response = generate(self._model, self._processor, formatted, max_tokens=512)
+        response = generate(
+            self._model, self._processor, formatted, max_tokens=max_output_tokens
+        )
         elapsed = time.perf_counter() - start
 
         return TranscriptionResult(

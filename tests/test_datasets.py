@@ -4,7 +4,7 @@ from gemma4_audio.datasets import DATASET_REGISTRY, get_dataset
 from gemma4_audio.datasets.open_asr import OpenASRLeaderboardDataset
 
 
-OPEN_ASR_NAMES = [
+SHORTFORM_NAMES = [
     "voxpopuli",
     "ami",
     "earnings22",
@@ -13,8 +13,27 @@ OPEN_ASR_NAMES = [
     "tedlium",
 ]
 
+LONGFORM_NAMES = [
+    "earnings21-long",
+    "earnings22-long",
+    "tedlium-long",
+]
 
-@pytest.mark.parametrize("name", OPEN_ASR_NAMES + ["librispeech"])
+CORAAL_NAMES = [
+    "coraal-atl",
+    "coraal-dca",
+    "coraal-dcb",
+    "coraal-dta",
+    "coraal-les",
+    "coraal-prv",
+    "coraal-roc",
+    "coraal-vld",
+]
+
+ALL_OPEN_ASR_NAMES = SHORTFORM_NAMES + LONGFORM_NAMES + CORAAL_NAMES
+
+
+@pytest.mark.parametrize("name", ALL_OPEN_ASR_NAMES + ["librispeech"])
 def test_registry_resolves(name: str):
     assert name in DATASET_REGISTRY
     ds = get_dataset(name)
@@ -26,7 +45,7 @@ def test_unknown_dataset_raises():
         get_dataset("not-a-real-dataset")
 
 
-@pytest.mark.parametrize("name", OPEN_ASR_NAMES + ["librispeech"])
+@pytest.mark.parametrize("name", ALL_OPEN_ASR_NAMES + ["librispeech"])
 def test_open_asr_rejects_bad_split(name: str):
     ds = get_dataset(name)
     with pytest.raises(ValueError, match="Invalid split"):
@@ -44,3 +63,17 @@ def test_open_asr_iter_without_load_raises():
     ds = OpenASRLeaderboardDataset("voxpopuli")
     with pytest.raises(RuntimeError, match="load"):
         next(iter(ds))
+
+
+def test_coraal_uses_coraal_repo():
+    ds = get_dataset("coraal-atl")
+    assert ds._hf_repo == "bezzam/coraal"
+    assert ds._config == "ATL"
+    assert ds._id_field == "file_id"
+
+
+def test_longform_uses_longform_repo():
+    ds = get_dataset("earnings22-long")
+    assert ds._hf_repo == "hf-audio/asr-leaderboard-longform"
+    assert ds._config == "earnings22"
+    assert ds._id_field is None

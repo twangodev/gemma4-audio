@@ -9,7 +9,6 @@ class VLLMBackend:
     def __init__(self) -> None:
         self._llm = None
         self._tokenizer = None
-        self._sampling_params = None
 
     def load_model(
         self,
@@ -18,7 +17,7 @@ class VLLMBackend:
         device: str | None = None,
     ) -> None:
         from transformers import AutoTokenizer
-        from vllm import LLM, SamplingParams
+        from vllm import LLM
 
         kwargs: dict = {
             "model": model_id,
@@ -35,16 +34,18 @@ class VLLMBackend:
 
         self._tokenizer = AutoTokenizer.from_pretrained(model_id)
         self._llm = LLM(**kwargs)
-        self._sampling_params = SamplingParams(temperature=0.0, max_tokens=512)
 
     def transcribe(
         self,
         audio: np.ndarray,
         sample_rate: int,
         prompt: str,
+        max_output_tokens: int = 512,
     ) -> TranscriptionResult:
         if self._llm is None or self._tokenizer is None:
             raise RuntimeError("Call load_model() before transcribe().")
+
+        from vllm import SamplingParams
 
         messages = [
             {
@@ -60,8 +61,10 @@ class VLLMBackend:
             messages, tokenize=False, add_generation_prompt=True
         )
 
+        sampling_params = SamplingParams(temperature=0.0, max_tokens=max_output_tokens)
+
         start = time.perf_counter()
-        outputs = self._llm.generate(text_prompt, self._sampling_params)
+        outputs = self._llm.generate(text_prompt, sampling_params)
         elapsed = time.perf_counter() - start
 
         generated_text = outputs[0].outputs[0].text
