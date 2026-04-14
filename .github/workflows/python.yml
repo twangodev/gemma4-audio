@@ -22,8 +22,14 @@ jobs:
           - google/gemma-4-E2B-it
           - google/gemma-4-E4B-it
         dataset:
-          - librispeech:test-clean
-          - librispeech:test-other
+          - librispeech:test.clean
+          - librispeech:test.other
+          - ami:test
+          - earnings22:test
+          - gigaspeech:test
+          - spgispeech:test
+          - tedlium:test
+          - voxpopuli:test
     env:
       HF_HUB_CACHE: /home/runner/.cache/huggingface/hub
     steps:
