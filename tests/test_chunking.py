@@ -52,11 +52,13 @@ def test_stitch_hypotheses_joins_and_strips():
 def test_chunked_transcribe_aggregates_latency_and_tokens():
     audio = np.zeros(5 * SR, dtype=np.float32)
     mock_backend = MagicMock()
-    responses = iter([
-        TranscriptionResult("foo", 0.1, 2),
-        TranscriptionResult("bar", 0.2, 3),
-        TranscriptionResult("baz", 0.3, 4),
-    ])
+    responses = iter(
+        [
+            TranscriptionResult("foo", 0.1, 2),
+            TranscriptionResult("bar", 0.2, 3),
+            TranscriptionResult("baz", 0.3, 4),
+        ]
+    )
     mock_backend.transcribe.side_effect = lambda *a, **k: next(responses)
 
     result = chunked_transcribe(
@@ -77,7 +79,9 @@ def test_chunked_transcribe_aggregates_latency_and_tokens():
 def test_chunked_transcribe_passes_scaled_max_tokens():
     audio = np.zeros(4 * SR, dtype=np.float32)
     mock_backend = MagicMock()
-    mock_backend.transcribe.side_effect = lambda *a, **k: TranscriptionResult("", 0.0, 0)
+    mock_backend.transcribe.side_effect = lambda *a, **k: TranscriptionResult(
+        "", 0.0, 0
+    )
 
     chunked_transcribe(
         mock_backend,

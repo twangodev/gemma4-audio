@@ -47,13 +47,11 @@ DATASET_REGISTRY: dict[str, Callable[[], Dataset]] = {
 # CORAAL dialect subsets (bezzam/coraal), e.g. "coraal-atl" → config "ATL"
 for _sub in CORAAL_SUBSETS:
     _name = f"coraal-{_sub.lower()}"
-    DATASET_REGISTRY[_name] = (
-        lambda sub=_sub, name=_name: OpenASRLeaderboardDataset(
-            sub,
-            hf_repo=CORAAL_REPO,
-            id_field="file_id",
-            display_name=name,
-        )
+    DATASET_REGISTRY[_name] = lambda sub=_sub, name=_name: OpenASRLeaderboardDataset(
+        sub,
+        hf_repo=CORAAL_REPO,
+        id_field="file_id",
+        display_name=name,
     )
 
 
