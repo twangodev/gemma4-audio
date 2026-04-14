@@ -38,6 +38,7 @@ class TransformersBackend:
         audio: np.ndarray,
         sample_rate: int,
         prompt: str,
+        max_output_tokens: int = 512,
     ) -> TranscriptionResult:
         if self._model is None or self._processor is None:
             raise RuntimeError("Call load_model() before transcribe().")
@@ -64,7 +65,7 @@ class TransformersBackend:
 
         start = time.perf_counter()
         with torch.inference_mode():
-            outputs = self._model.generate(**inputs, max_new_tokens=512)
+            outputs = self._model.generate(**inputs, max_new_tokens=max_output_tokens)
         elapsed = time.perf_counter() - start
 
         tokens_generated = outputs.shape[-1] - input_len

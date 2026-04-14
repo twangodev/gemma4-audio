@@ -19,6 +19,7 @@ class InferenceBackend(Protocol):
         audio: np.ndarray,
         sample_rate: int,
         prompt: str,
+        max_output_tokens: int = 512,
     ) -> TranscriptionResult: ...
 
     def cleanup(self) -> None: ...

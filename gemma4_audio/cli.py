@@ -53,6 +53,12 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
     eval_parser.add_argument(
         "--prompt", default=DEFAULT_PROMPT, help="Transcription prompt"
     )
+    eval_parser.add_argument(
+        "--max-output-tokens",
+        type=int,
+        default=None,
+        help="Max output tokens per sample. If unset, auto-scales with audio duration.",
+    )
 
     args = parser.parse_args(argv)
 
@@ -79,6 +85,7 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
         quiet=args.quiet,
         streaming=args.streaming,
         prompt=args.prompt,
+        max_output_tokens=args.max_output_tokens,
     )
 
 

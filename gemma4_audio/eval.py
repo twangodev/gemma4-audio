@@ -49,8 +49,16 @@ def run_eval(
     )
 
     for sample in progress:
-        result = backend.transcribe(sample.audio, sample.sample_rate, config.prompt)
         audio_duration = len(sample.audio) / sample.sample_rate
+        if config.max_output_tokens is not None:
+            max_tokens = config.max_output_tokens
+        else:
+            # 4 tokens/sec ≈ 240 wpm (above typical speech);
+            # floor of 512 preserves prior behavior on short clips.
+            max_tokens = max(512, int(audio_duration * 4))
+        result = backend.transcribe(
+            sample.audio, sample.sample_rate, config.prompt, max_tokens
+        )
 
         sample_metric = compute_sample_metrics(
             id=sample.id,
