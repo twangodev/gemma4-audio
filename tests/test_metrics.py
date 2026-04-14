@@ -4,7 +4,9 @@ from gemma4_audio.metrics import compute_corpus_metrics, compute_sample_metrics
 
 
 def test_perfect_transcription():
-    r = compute_sample_metrics("s1", "the cat sat on the mat", "the cat sat on the mat", 0.5, 2.0)
+    r = compute_sample_metrics(
+        "s1", "the cat sat on the mat", "the cat sat on the mat", 0.5, 2.0
+    )
     assert r.wer == 0.0
     assert r.cer == 0.0
     assert r.substitutions == 0
@@ -30,7 +32,9 @@ def test_corpus_metrics():
         compute_sample_metrics("s1", "the cat sat", "the cat sat", 0.5, 2.0),
         compute_sample_metrics("s2", "hello world", "hello word", 0.3, 1.0),
     ]
-    corpus = compute_corpus_metrics(samples, ["the cat sat", "hello world"], ["the cat sat", "hello word"])
+    corpus = compute_corpus_metrics(
+        samples, ["the cat sat", "hello world"], ["the cat sat", "hello word"]
+    )
     assert corpus.num_samples == 2
     assert corpus.wer > 0.0
     assert corpus.latency.mean == pytest.approx(0.4)

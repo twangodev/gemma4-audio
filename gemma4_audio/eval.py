@@ -67,7 +67,9 @@ def run_eval(
             running_wer = sum(s.wer for s in sample_results) / len(sample_results)
             progress.set_postfix(wer=f"{running_wer:.2%}")
 
-    corpus_metrics = compute_corpus_metrics(sample_results, all_references, all_hypotheses)
+    corpus_metrics = compute_corpus_metrics(
+        sample_results, all_references, all_hypotheses
+    )
     eval_result = EvalResult(
         config=config,
         corpus_metrics=corpus_metrics,

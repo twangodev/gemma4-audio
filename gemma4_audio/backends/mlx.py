@@ -46,9 +46,7 @@ class MLXBackend:
         )
 
         start = time.perf_counter()
-        response = generate(
-            self._model, self._processor, formatted, max_tokens=512
-        )
+        response = generate(self._model, self._processor, formatted, max_tokens=512)
         elapsed = time.perf_counter() - start
 
         return TranscriptionResult(

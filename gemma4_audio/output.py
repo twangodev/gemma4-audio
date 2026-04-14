@@ -37,11 +37,13 @@ def format_stdout(result: EvalResult) -> str:
         f"P50:    {m.latency.p50:.2f}s   P95:  {m.latency.p95:.2f}s",
     ]
     if m.bleu is not None:
-        lines.extend([
-            "",
-            "--- BLEU ---",
-            f"BLEU:   {m.bleu:.1f}",
-        ])
+        lines.extend(
+            [
+                "",
+                "--- BLEU ---",
+                f"BLEU:   {m.bleu:.1f}",
+            ]
+        )
     return "\n".join(lines)
 
 
@@ -60,27 +62,38 @@ def write_csv(result: EvalResult, path: str) -> None:
     if not result.sample_results:
         return
     fieldnames = [
-        "id", "reference", "hypothesis",
-        "wer", "cer", "mer", "wil",
-        "substitutions", "insertions", "deletions",
-        "latency_s", "rtfx", "audio_duration_s",
+        "id",
+        "reference",
+        "hypothesis",
+        "wer",
+        "cer",
+        "mer",
+        "wil",
+        "substitutions",
+        "insertions",
+        "deletions",
+        "latency_s",
+        "rtfx",
+        "audio_duration_s",
     ]
     with open(path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for sample in result.sample_results:
-            writer.writerow({
-                "id": sample.id,
-                "reference": sample.reference,
-                "hypothesis": sample.hypothesis,
-                "wer": sample.wer,
-                "cer": sample.cer,
-                "mer": sample.mer,
-                "wil": sample.wil,
-                "substitutions": sample.substitutions,
-                "insertions": sample.insertions,
-                "deletions": sample.deletions,
-                "latency_s": sample.latency_s,
-                "rtfx": sample.rtfx,
-                "audio_duration_s": sample.audio_duration_s,
-            })
+            writer.writerow(
+                {
+                    "id": sample.id,
+                    "reference": sample.reference,
+                    "hypothesis": sample.hypothesis,
+                    "wer": sample.wer,
+                    "cer": sample.cer,
+                    "mer": sample.mer,
+                    "wil": sample.wil,
+                    "substitutions": sample.substitutions,
+                    "insertions": sample.insertions,
+                    "deletions": sample.deletions,
+                    "latency_s": sample.latency_s,
+                    "rtfx": sample.rtfx,
+                    "audio_duration_s": sample.audio_duration_s,
+                }
+            )

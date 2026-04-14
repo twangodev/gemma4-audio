@@ -4,7 +4,14 @@ from gemma4_audio.datasets import DATASET_REGISTRY, get_dataset
 from gemma4_audio.datasets.open_asr import OpenASRLeaderboardDataset
 
 
-OPEN_ASR_NAMES = ["voxpopuli", "ami", "earnings22", "gigaspeech", "spgispeech", "tedlium"]
+OPEN_ASR_NAMES = [
+    "voxpopuli",
+    "ami",
+    "earnings22",
+    "gigaspeech",
+    "spgispeech",
+    "tedlium",
+]
 
 
 @pytest.mark.parametrize("name", OPEN_ASR_NAMES + ["librispeech"])

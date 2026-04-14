@@ -29,10 +29,12 @@ def test_e2e_with_mock():
     ]
 
     mock_backend = MagicMock()
-    responses = iter([
-        TranscriptionResult("the cat sat on the mat", 0.1, 10),
-        TranscriptionResult("hello world", 0.05, 5),
-    ])
+    responses = iter(
+        [
+            TranscriptionResult("the cat sat on the mat", 0.1, 10),
+            TranscriptionResult("hello world", 0.05, 5),
+        ]
+    )
     mock_backend.transcribe.side_effect = lambda *a, **k: next(responses)
 
     mock_dataset = MagicMock()
@@ -44,16 +46,18 @@ def test_e2e_with_mock():
         json_path = str(Path(tmpdir) / "results.json")
         csv_path = str(Path(tmpdir) / "results.csv")
 
-        config = parse_args([
-            "eval",
-            "--model",
-            "google/gemma-4-E4B-it",
-            "--output-json",
-            json_path,
-            "--output-csv",
-            csv_path,
-            "--quiet",
-        ])
+        config = parse_args(
+            [
+                "eval",
+                "--model",
+                "google/gemma-4-E4B-it",
+                "--output-json",
+                json_path,
+                "--output-csv",
+                csv_path,
+                "--quiet",
+            ]
+        )
         result = run_eval(config, backend=mock_backend, dataset=mock_dataset)
 
         # Verify metrics

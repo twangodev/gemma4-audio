@@ -4,9 +4,7 @@ import numpy as np
 TARGET_SR = 16000
 
 
-def normalize_audio(
-    audio: np.ndarray, sample_rate: int
-) -> tuple[np.ndarray, int]:
+def normalize_audio(audio: np.ndarray, sample_rate: int) -> tuple[np.ndarray, int]:
     """Normalize audio to 16kHz mono float32 in [-1, 1]."""
     # Stereo to mono: average channels
     if audio.ndim == 2:

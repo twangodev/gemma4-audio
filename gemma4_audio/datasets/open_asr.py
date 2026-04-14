@@ -17,7 +17,9 @@ class OpenASRLeaderboardDataset:
 
     HF_REPO = "hf-audio/open-asr-leaderboard"
 
-    def __init__(self, config: str, valid_splits: frozenset[str] = frozenset({"test"})) -> None:
+    def __init__(
+        self, config: str, valid_splits: frozenset[str] = frozenset({"test"})
+    ) -> None:
         self.name: str = config
         self._config: str = config
         self._valid_splits: frozenset[str] = valid_splits

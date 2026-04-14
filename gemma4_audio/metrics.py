@@ -2,7 +2,12 @@ import jiwer
 import numpy as np
 from whisper_normalizer.english import EnglishTextNormalizer
 
-from gemma4_audio.config import AudioDurationStats, CorpusMetrics, LatencyStats, SampleResult
+from gemma4_audio.config import (
+    AudioDurationStats,
+    CorpusMetrics,
+    LatencyStats,
+    SampleResult,
+)
 
 _normalizer = EnglishTextNormalizer()
 
@@ -26,13 +31,17 @@ def compute_sample_metrics(
     # Handle empty reference edge case
     if not ref_norm.strip():
         return SampleResult(
-            id=id, reference=reference, hypothesis=hypothesis,
+            id=id,
+            reference=reference,
+            hypothesis=hypothesis,
             wer=0.0 if not hyp_norm.strip() else 1.0,
             cer=0.0 if not hyp_norm.strip() else 1.0,
             mer=0.0 if not hyp_norm.strip() else 1.0,
             wil=0.0 if not hyp_norm.strip() else 1.0,
-            substitutions=0, insertions=len(hyp_norm.split()) if hyp_norm.strip() else 0,
-            deletions=0, latency_s=latency_s,
+            substitutions=0,
+            insertions=len(hyp_norm.split()) if hyp_norm.strip() else 0,
+            deletions=0,
+            latency_s=latency_s,
             rtfx=audio_duration_s / latency_s if latency_s > 0 else 0.0,
             audio_duration_s=audio_duration_s,
         )

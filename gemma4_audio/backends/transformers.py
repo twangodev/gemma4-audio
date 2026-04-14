@@ -31,9 +31,7 @@ class TransformersBackend:
                 raise ValueError(f"Unsupported quantization: {quantization}")
 
         self._processor = AutoProcessor.from_pretrained(model_id)
-        self._model = AutoModelForMultimodalLM.from_pretrained(
-            model_id, **kwargs
-        )
+        self._model = AutoModelForMultimodalLM.from_pretrained(model_id, **kwargs)
 
     def transcribe(
         self,

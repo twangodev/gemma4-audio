@@ -22,10 +22,12 @@ BACKEND_REGISTRY: dict[str, type] = {
 
 if _try_import("vllm"):
     from gemma4_audio.backends.vllm import VLLMBackend
+
     BACKEND_REGISTRY["vllm"] = VLLMBackend
 
 if _try_import("mlx_vlm"):
     from gemma4_audio.backends.mlx import MLXBackend
+
     BACKEND_REGISTRY["mlx"] = MLXBackend
 
 
@@ -34,9 +36,7 @@ def select_backend(name: str = "auto") -> InferenceBackend:
     if name != "auto":
         if name not in BACKEND_REGISTRY:
             available = ", ".join(sorted(BACKEND_REGISTRY.keys()))
-            raise KeyError(
-                f"Unknown backend '{name}'. Available: {available}"
-            )
+            raise KeyError(f"Unknown backend '{name}'. Available: {available}")
         return BACKEND_REGISTRY[name]()
 
     if torch.cuda.is_available() and "vllm" in BACKEND_REGISTRY:

@@ -16,26 +16,43 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
     eval_parser.add_argument("--dataset", default="librispeech", help="Dataset name")
     eval_parser.add_argument("--split", default="test.clean", help="Dataset split")
     eval_parser.add_argument(
-        "--benchmark", default=None,
+        "--benchmark",
+        default=None,
         help="Dataset:split shorthand (e.g. librispeech:test.clean). Overrides --dataset and --split.",
     )
     eval_parser.add_argument(
-        "--backend", default="auto",
+        "--backend",
+        default="auto",
         choices=["auto", "vllm", "mlx", "transformers"],
         help="Inference backend",
     )
     eval_parser.add_argument(
-        "--quantization", default=None,
+        "--quantization",
+        default=None,
         choices=["4bit", "8bit"],
         help="Quantization mode",
     )
-    eval_parser.add_argument("--limit", type=int, default=None, help="Max samples to evaluate")
-    eval_parser.add_argument("--seed", type=int, default=42, help="Random seed for shuffling")
-    eval_parser.add_argument("--output-json", default=None, help="Path to write JSON results")
-    eval_parser.add_argument("--output-csv", default=None, help="Path to write CSV results")
-    eval_parser.add_argument("--quiet", action="store_true", help="Suppress stdout output")
-    eval_parser.add_argument("--streaming", action="store_true", help="Stream dataset instead of downloading")
-    eval_parser.add_argument("--prompt", default=DEFAULT_PROMPT, help="Transcription prompt")
+    eval_parser.add_argument(
+        "--limit", type=int, default=None, help="Max samples to evaluate"
+    )
+    eval_parser.add_argument(
+        "--seed", type=int, default=42, help="Random seed for shuffling"
+    )
+    eval_parser.add_argument(
+        "--output-json", default=None, help="Path to write JSON results"
+    )
+    eval_parser.add_argument(
+        "--output-csv", default=None, help="Path to write CSV results"
+    )
+    eval_parser.add_argument(
+        "--quiet", action="store_true", help="Suppress stdout output"
+    )
+    eval_parser.add_argument(
+        "--streaming", action="store_true", help="Stream dataset instead of downloading"
+    )
+    eval_parser.add_argument(
+        "--prompt", default=DEFAULT_PROMPT, help="Transcription prompt"
+    )
 
     args = parser.parse_args(argv)
 
@@ -44,7 +61,9 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
     if args.benchmark:
         parts = args.benchmark.split(":", 1)
         if len(parts) != 2:
-            parser.error("--benchmark must be in dataset:split format (e.g. librispeech:test.clean)")
+            parser.error(
+                "--benchmark must be in dataset:split format (e.g. librispeech:test.clean)"
+            )
         dataset, split = parts
 
     return EvalConfig(
@@ -66,4 +85,5 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
 def main(argv: list[str] | None = None) -> None:
     config = parse_args(argv)
     from gemma4_audio.eval import run_eval
+
     run_eval(config)

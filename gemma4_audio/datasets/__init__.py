@@ -10,7 +10,9 @@ from gemma4_audio.datasets.open_asr import OpenASRLeaderboardDataset
 LIBRISPEECH_SPLITS = frozenset({"test.clean", "test.other"})
 
 DATASET_REGISTRY: dict[str, Callable[[], Dataset]] = {
-    "librispeech": lambda: OpenASRLeaderboardDataset("librispeech", valid_splits=LIBRISPEECH_SPLITS),
+    "librispeech": lambda: OpenASRLeaderboardDataset(
+        "librispeech", valid_splits=LIBRISPEECH_SPLITS
+    ),
     "voxpopuli": lambda: OpenASRLeaderboardDataset("voxpopuli"),
     "ami": lambda: OpenASRLeaderboardDataset("ami"),
     "earnings22": lambda: OpenASRLeaderboardDataset("earnings22"),
@@ -23,9 +25,7 @@ DATASET_REGISTRY: dict[str, Callable[[], Dataset]] = {
 def get_dataset(name: str) -> Dataset:
     if name not in DATASET_REGISTRY:
         available = ", ".join(sorted(DATASET_REGISTRY.keys()))
-        raise KeyError(
-            f"Unknown dataset '{name}'. Available: {available}"
-        )
+        raise KeyError(f"Unknown dataset '{name}'. Available: {available}")
     return DATASET_REGISTRY[name]()
 
 
