@@ -37,10 +37,8 @@ jobs:
 
       - uses: astral-sh/setup-uv@v4
 
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: ffmpeg
-          execute_install_scripts: true
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Cache HuggingFace model
         uses: actions/cache@v4
