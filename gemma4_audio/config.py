@@ -12,7 +12,7 @@ DEFAULT_PROMPT = (
 class EvalConfig:
     model: str
     dataset: str = "librispeech"
-    split: str = "test-clean"
+    split: str = "test.clean"
     backend: str = "auto"
     quantization: str | None = None
     limit: int | None = None

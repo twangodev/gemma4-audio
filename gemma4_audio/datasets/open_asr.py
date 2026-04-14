@@ -7,23 +7,32 @@ from gemma4_audio.audio import normalize_audio
 from gemma4_audio.datasets.base import Sample
 
 
-class LibriSpeechDataset:
-    name: str = "librispeech"
+class OpenASRLeaderboardDataset:
+    """Loader for configs in the unified Open ASR Leaderboard test repo.
 
-    VALID_SPLITS = {"test-clean", "test-other", "dev-clean", "dev-other"}
+    Backed by hf-audio/open-asr-leaderboard — a single repo that mirrors the
+    test splits of the ESB benchmark datasets with a uniform schema
+    (audio, text, id, dataset, audio_length_s) and no gated-access friction.
+    """
 
-    def __init__(self) -> None:
+    HF_REPO = "hf-audio/open-asr-leaderboard"
+
+    def __init__(self, config: str, valid_splits: frozenset[str] = frozenset({"test"})) -> None:
+        self.name: str = config
+        self._config: str = config
+        self._valid_splits: frozenset[str] = valid_splits
         self._data: hf_datasets.Dataset | hf_datasets.IterableDataset | None = None
 
     def load(self, split: str, seed: int = 42, *, streaming: bool = False) -> None:
-        if split not in self.VALID_SPLITS:
+        if split not in self._valid_splits:
             raise ValueError(
-                f"Invalid split '{split}' for LibriSpeech. "
-                f"Valid splits: {sorted(self.VALID_SPLITS)}"
+                f"Invalid split '{split}' for {self.name}. "
+                f"Valid splits: {sorted(self._valid_splits)}"
             )
         self._data = hf_datasets.load_dataset(
-            "openslr/librispeech_asr",
-            split=split.replace("-", "."),
+            self.HF_REPO,
+            self._config,
+            split=split,
             streaming=streaming,
         ).shuffle(seed=seed)
 
@@ -38,6 +47,5 @@ class LibriSpeechDataset:
                 id=str(row["id"]),
                 audio=audio_norm,
                 sample_rate=target_sr,
-                reference=row["text"].lower(),
+                reference=row["text"],
             )
-

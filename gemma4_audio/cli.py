@@ -14,10 +14,10 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
     eval_parser = subparsers.add_parser("eval", help="Run ASR evaluation")
     eval_parser.add_argument("--model", required=True, help="HuggingFace model ID")
     eval_parser.add_argument("--dataset", default="librispeech", help="Dataset name")
-    eval_parser.add_argument("--split", default="test-clean", help="Dataset split")
+    eval_parser.add_argument("--split", default="test.clean", help="Dataset split")
     eval_parser.add_argument(
         "--benchmark", default=None,
-        help="Dataset:split shorthand (e.g. librispeech:test-clean). Overrides --dataset and --split.",
+        help="Dataset:split shorthand (e.g. librispeech:test.clean). Overrides --dataset and --split.",
     )
     eval_parser.add_argument(
         "--backend", default="auto",
@@ -44,7 +44,7 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
     if args.benchmark:
         parts = args.benchmark.split(":", 1)
         if len(parts) != 2:
-            parser.error("--benchmark must be in dataset:split format (e.g. librispeech:test-clean)")
+            parser.error("--benchmark must be in dataset:split format (e.g. librispeech:test.clean)")
         dataset, split = parts
 
     return EvalConfig(
