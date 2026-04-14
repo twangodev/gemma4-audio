@@ -4,11 +4,20 @@ from tqdm import tqdm
 
 from gemma4_audio.backends import select_backend
 from gemma4_audio.backends.base import InferenceBackend
+from gemma4_audio.chunking import chunked_transcribe
 from gemma4_audio.config import EvalConfig, EvalResult
 from gemma4_audio.datasets import get_dataset
 from gemma4_audio.datasets.base import Dataset
 from gemma4_audio.metrics import compute_corpus_metrics, compute_sample_metrics
 from gemma4_audio.output import format_stdout, write_csv, write_json
+
+
+def _resolve_max_tokens(config: EvalConfig, duration_s: float) -> int:
+    if config.max_output_tokens is not None:
+        return config.max_output_tokens
+    # 4 tokens/sec ≈ 240 wpm (above typical speech);
+    # floor of 512 preserves prior behavior on short clips.
+    return max(512, int(duration_s * 4))
 
 
 def run_eval(
@@ -50,15 +59,23 @@ def run_eval(
 
     for sample in progress:
         audio_duration = len(sample.audio) / sample.sample_rate
-        if config.max_output_tokens is not None:
-            max_tokens = config.max_output_tokens
+        chunk_s = config.chunk_duration_s
+        if chunk_s is not None and audio_duration > 2 * chunk_s:
+            result = chunked_transcribe(
+                backend,
+                sample.audio,
+                sample.sample_rate,
+                config.prompt,
+                chunk_duration_s=chunk_s,
+                max_output_tokens_fn=lambda d: _resolve_max_tokens(config, d),
+            )
         else:
-            # 4 tokens/sec ≈ 240 wpm (above typical speech);
-            # floor of 512 preserves prior behavior on short clips.
-            max_tokens = max(512, int(audio_duration * 4))
-        result = backend.transcribe(
-            sample.audio, sample.sample_rate, config.prompt, max_tokens
-        )
+            result = backend.transcribe(
+                sample.audio,
+                sample.sample_rate,
+                config.prompt,
+                _resolve_max_tokens(config, audio_duration),
+            )
 
         sample_metric = compute_sample_metrics(
             id=sample.id,

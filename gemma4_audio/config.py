@@ -23,6 +23,7 @@ class EvalConfig:
     streaming: bool = False
     prompt: str = field(default=DEFAULT_PROMPT)
     max_output_tokens: int | None = None
+    chunk_duration_s: float | None = None
 
 
 @dataclass(frozen=True)

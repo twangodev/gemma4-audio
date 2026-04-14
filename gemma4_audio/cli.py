@@ -59,6 +59,15 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
         default=None,
         help="Max output tokens per sample. If unset, auto-scales with audio duration.",
     )
+    eval_parser.add_argument(
+        "--chunk-duration",
+        type=float,
+        default=None,
+        help=(
+            "Chunk duration in seconds for long-form transcription. "
+            "Auto-activates when audio > 2x this value; no effect on short clips."
+        ),
+    )
 
     args = parser.parse_args(argv)
 
@@ -86,6 +95,7 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
         streaming=args.streaming,
         prompt=args.prompt,
         max_output_tokens=args.max_output_tokens,
+        chunk_duration_s=args.chunk_duration,
     )
 
 
