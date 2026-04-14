@@ -8,7 +8,7 @@ on:
       limit:
         description: Samples per split
         type: number
-        default: 50
+        default: 15
 
 jobs:
   benchmark:
@@ -60,7 +60,7 @@ jobs:
             --benchmark "${{ matrix.dataset }}" \
             --backend transformers \
             --streaming \
-            --limit "${{ inputs.limit || 50 }}" \
+            --limit "${{ inputs.limit || 15 }}" \
             --output-json results.json \
             --output-csv results.csv
 
