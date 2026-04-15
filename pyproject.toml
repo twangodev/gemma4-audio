@@ -12,10 +12,10 @@ dependencies = [
     "pillow>=12.2.0",
     "sacrebleu>=2.6.0",
     "torch>=2.11.0",
-    "torchcodec>=0.11.0",
+    "torchcodec>=0.11.1",
     "torchvision>=0.26.0",
     "tqdm>=4.67.3",
-    "transformers>=5.5.3",
+    "transformers>=5.5.4",
     "whisper-normalizer>=0.1.12",
 ]
 
