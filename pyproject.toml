@@ -18,13 +18,13 @@ dependencies = [
 transformers = [
     "accelerate>=1.13.0",
     "torch>=2.11.0",
-    "torchcodec>=0.11.0",
+    "torchcodec>=0.11.1",
     "torchvision>=0.26.0",
-    "transformers>=5.5.3",
+    "transformers>=5.5.4",
 ]
 vllm = [
-    "vllm[audio]>=0.19",
-    "torchcodec==0.10.*",
+    "vllm[audio]>=0.19.1",
+    "torchcodec==0.11.*",
 ]
 mlx = [
     "mlx-vlm>=0.4.4",
@@ -58,5 +58,5 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "pytest>=9.0.3",
-    "ruff>=0.15.10",
+    "ruff>=0.15.11",
 ]
