@@ -9,7 +9,12 @@ from gemma4_audio.config import EvalConfig, EvalResult
 from gemma4_audio.datasets import get_dataset
 from gemma4_audio.datasets.base import Dataset
 from gemma4_audio.metrics import compute_corpus_metrics, compute_sample_metrics
-from gemma4_audio.output import format_stdout, write_csv, write_json
+from gemma4_audio.output import (
+    format_stdout,
+    resolve_output_paths,
+    write_csv,
+    write_json,
+)
 
 
 def _resolve_max_tokens(config: EvalConfig, duration_s: float) -> int:
@@ -104,10 +109,13 @@ def run_eval(
     # Output
     if not config.quiet:
         print(format_stdout(eval_result))
-    if config.output_json:
-        write_json(eval_result, config.output_json)
-    if config.output_csv:
-        write_csv(eval_result, config.output_csv)
+    paths = resolve_output_paths(config)
+    if paths.root is not None:
+        paths.root.mkdir(parents=True, exist_ok=True)
+    if paths.json is not None:
+        write_json(eval_result, paths.json)
+    if paths.csv is not None:
+        write_csv(eval_result, paths.csv)
 
     # Cleanup
     backend.cleanup()

@@ -1,8 +1,45 @@
 import csv
 import json
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
+from pathlib import Path
 
-from gemma4_audio.config import EvalResult
+from gemma4_audio.config import EvalConfig, EvalResult
+
+
+@dataclass(frozen=True)
+class OutputPaths:
+    """Resolved on-disk locations for a single eval run's artifacts."""
+
+    root: Path | None
+    json: Path | None
+    csv: Path | None
+
+
+def _run_slug(config: EvalConfig) -> str:
+    """Stable per-run directory name: {model}__{dataset}_{split} with / -> _."""
+    return f"{config.model.replace('/', '_')}__{config.dataset}_{config.split}"
+
+
+def resolve_output_paths(config: EvalConfig) -> OutputPaths:
+    """Compute artifact paths for a config.
+
+    Precedence: explicit --output-json / --output-csv override the auto-derived
+    paths. When output_dir is set (default), artifacts land in
+    {output_dir}/{slug}/results.{json,csv}. Setting output_dir to an empty
+    string / None disables auto-derivation.
+    """
+    root = Path(config.output_dir) / _run_slug(config) if config.output_dir else None
+
+    def _resolve(explicit: str | None, default_name: str) -> Path | None:
+        if explicit:
+            return Path(explicit)
+        return root / default_name if root is not None else None
+
+    return OutputPaths(
+        root=root,
+        json=_resolve(config.output_json, "results.json"),
+        csv=_resolve(config.output_csv, "results.csv"),
+    )
 
 
 def format_stdout(result: EvalResult) -> str:
@@ -47,7 +84,7 @@ def format_stdout(result: EvalResult) -> str:
     return "\n".join(lines)
 
 
-def write_json(result: EvalResult, path: str) -> None:
+def write_json(result: EvalResult, path: str | Path) -> None:
     """Write full eval results to a JSON file."""
     data = asdict(result)
     # Remove numpy arrays that can't be serialized
@@ -57,7 +94,7 @@ def write_json(result: EvalResult, path: str) -> None:
         json.dump(data, f, indent=2, default=str)
 
 
-def write_csv(result: EvalResult, path: str) -> None:
+def write_csv(result: EvalResult, path: str | Path) -> None:
     """Write per-sample results to a CSV file."""
     if not result.sample_results:
         return

@@ -39,10 +39,23 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
         "--seed", type=int, default=42, help="Random seed for shuffling"
     )
     eval_parser.add_argument(
-        "--output-json", default=None, help="Path to write JSON results"
+        "--output-dir",
+        default="eval_results",
+        help=(
+            "Root directory for result artifacts. Results land in "
+            "{output_dir}/{model}__{dataset}_{split}/results.{json,csv}. "
+            "Pass an empty string to skip disk writes."
+        ),
     )
     eval_parser.add_argument(
-        "--output-csv", default=None, help="Path to write CSV results"
+        "--output-json",
+        default=None,
+        help="Path to write JSON results (overrides --output-dir)",
+    )
+    eval_parser.add_argument(
+        "--output-csv",
+        default=None,
+        help="Path to write CSV results (overrides --output-dir)",
     )
     eval_parser.add_argument(
         "--quiet", action="store_true", help="Suppress stdout output"
