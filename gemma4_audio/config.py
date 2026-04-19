@@ -17,6 +17,7 @@ class EvalConfig:
     quantization: str | None = None
     limit: int | None = None
     seed: int = 42
+    output_dir: str | None = "eval_results"
     output_json: str | None = None
     output_csv: str | None = None
     quiet: bool = False
