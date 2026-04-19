@@ -5,9 +5,14 @@ from tqdm import tqdm
 from gemma4_audio.backends import select_backend
 from gemma4_audio.backends.base import InferenceBackend
 from gemma4_audio.chunking import chunked_transcribe
-from gemma4_audio.config import EvalConfig, EvalResult
+from gemma4_audio.config import (
+    EvalConfig,
+    EvalResult,
+    TranscribeRequest,
+    TranscriptionResult,
+)
 from gemma4_audio.datasets import get_dataset
-from gemma4_audio.datasets.base import Dataset
+from gemma4_audio.datasets.base import Dataset, Sample
 from gemma4_audio.metrics import compute_corpus_metrics, compute_sample_metrics
 from gemma4_audio.output import (
     format_stdout,
@@ -62,26 +67,10 @@ def run_eval(
         leave=True,
     )
 
-    for sample in progress:
-        audio_duration = len(sample.audio) / sample.sample_rate
-        chunk_s = config.chunk_duration_s
-        if chunk_s is not None and audio_duration > 2 * chunk_s:
-            result = chunked_transcribe(
-                backend,
-                sample.audio,
-                sample.sample_rate,
-                config.prompt,
-                chunk_duration_s=chunk_s,
-                max_output_tokens_fn=lambda d: _resolve_max_tokens(config, d),
-            )
-        else:
-            result = backend.transcribe(
-                sample.audio,
-                sample.sample_rate,
-                config.prompt,
-                _resolve_max_tokens(config, audio_duration),
-            )
+    pending: list[tuple[Sample, TranscribeRequest]] = []
 
+    def record(sample: Sample, result: TranscriptionResult) -> None:
+        audio_duration = len(sample.audio) / sample.sample_rate
         sample_metric = compute_sample_metrics(
             id=sample.id,
             reference=sample.reference,
@@ -92,10 +81,52 @@ def run_eval(
         sample_results.append(sample_metric)
         all_references.append(sample.reference)
         all_hypotheses.append(result.text)
-
         if not config.quiet:
             running_wer = sum(s.wer for s in sample_results) / len(sample_results)
             progress.set_postfix(wer=f"{running_wer:.2%}")
+
+    def flush_pending() -> None:
+        if not pending:
+            return
+        results = backend.transcribe([req for _, req in pending])
+        for (sample, _), result in zip(pending, results):
+            record(sample, result)
+        pending.clear()
+
+    for sample in progress:
+        audio_duration = len(sample.audio) / sample.sample_rate
+        chunk_s = config.chunk_duration_s
+
+        if chunk_s is not None and audio_duration > 2 * chunk_s:
+            # Long-form samples bypass the batch queue — chunked_transcribe
+            # drives the backend itself. Flush first to keep result order.
+            flush_pending()
+            result = chunked_transcribe(
+                backend,
+                sample.audio,
+                sample.sample_rate,
+                config.prompt,
+                chunk_duration_s=chunk_s,
+                max_output_tokens_fn=lambda d: _resolve_max_tokens(config, d),
+            )
+            record(sample, result)
+            continue
+
+        pending.append(
+            (
+                sample,
+                TranscribeRequest(
+                    audio=sample.audio,
+                    sample_rate=sample.sample_rate,
+                    prompt=config.prompt,
+                    max_output_tokens=_resolve_max_tokens(config, audio_duration),
+                ),
+            )
+        )
+        if len(pending) >= config.batch_size:
+            flush_pending()
+
+    flush_pending()
 
     corpus_metrics = compute_corpus_metrics(
         sample_results, all_references, all_hypotheses

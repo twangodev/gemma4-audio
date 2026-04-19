@@ -29,13 +29,16 @@ def test_e2e_with_mock():
     ]
 
     mock_backend = MagicMock()
-    responses = iter(
-        [
-            TranscriptionResult("the cat sat on the mat", 0.1, 10),
-            TranscriptionResult("hello world", 0.05, 5),
-        ]
-    )
-    mock_backend.transcribe.side_effect = lambda *a, **k: next(responses)
+    canned = [
+        TranscriptionResult("the cat sat on the mat", 0.1, 10),
+        TranscriptionResult("hello world", 0.05, 5),
+    ]
+
+    def fake_transcribe(batch):
+        # Mirror backend contract: return one result per request, in order.
+        return [canned[i] for i in range(len(batch))]
+
+    mock_backend.transcribe.side_effect = fake_transcribe
 
     mock_dataset = MagicMock()
     mock_dataset.name = "librispeech"

@@ -3,7 +3,7 @@ from typing import Callable, Iterator
 import numpy as np
 
 from gemma4_audio.backends.base import InferenceBackend
-from gemma4_audio.config import TranscriptionResult
+from gemma4_audio.config import TranscribeRequest, TranscriptionResult
 
 
 def split_audio(
@@ -63,8 +63,13 @@ def chunked_transcribe(
 
     for chunk in split_audio(audio, sample_rate, chunk_duration_s, overlap_s):
         chunk_duration = len(chunk) / sample_rate
-        max_tokens = max_output_tokens_fn(chunk_duration)
-        result = backend.transcribe(chunk, sample_rate, prompt, max_tokens)
+        req = TranscribeRequest(
+            audio=chunk,
+            sample_rate=sample_rate,
+            prompt=prompt,
+            max_output_tokens=max_output_tokens_fn(chunk_duration),
+        )
+        result = backend.transcribe([req])[0]
         hypotheses.append(result.text)
         total_latency += result.elapsed_seconds
         total_tokens += result.tokens_generated

@@ -81,6 +81,16 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
             "Auto-activates when audio > 2x this value; no effect on short clips."
         ),
     )
+    eval_parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=16,
+        help=(
+            "Number of short-form samples submitted to the backend per call. "
+            "Backends that batch (vLLM) process them concurrently; others "
+            "iterate internally. Long-form samples are always processed alone."
+        ),
+    )
 
     args = parser.parse_args(argv)
 
@@ -109,6 +119,7 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
         prompt=args.prompt,
         max_output_tokens=args.max_output_tokens,
         chunk_duration_s=args.chunk_duration,
+        batch_size=args.batch_size,
     )
 
 

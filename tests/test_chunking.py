@@ -8,7 +8,7 @@ from gemma4_audio.chunking import (
     split_audio,
     stitch_hypotheses,
 )
-from gemma4_audio.config import TranscriptionResult
+from gemma4_audio.config import TranscribeRequest, TranscriptionResult
 
 
 SR = 16000
@@ -54,9 +54,9 @@ def test_chunked_transcribe_aggregates_latency_and_tokens():
     mock_backend = MagicMock()
     responses = iter(
         [
-            TranscriptionResult("foo", 0.1, 2),
-            TranscriptionResult("bar", 0.2, 3),
-            TranscriptionResult("baz", 0.3, 4),
+            [TranscriptionResult("foo", 0.1, 2)],
+            [TranscriptionResult("bar", 0.2, 3)],
+            [TranscriptionResult("baz", 0.3, 4)],
         ]
     )
     mock_backend.transcribe.side_effect = lambda *a, **k: next(responses)
@@ -79,9 +79,9 @@ def test_chunked_transcribe_aggregates_latency_and_tokens():
 def test_chunked_transcribe_passes_scaled_max_tokens():
     audio = np.zeros(4 * SR, dtype=np.float32)
     mock_backend = MagicMock()
-    mock_backend.transcribe.side_effect = lambda *a, **k: TranscriptionResult(
-        "", 0.0, 0
-    )
+    mock_backend.transcribe.side_effect = lambda *a, **k: [
+        TranscriptionResult("", 0.0, 0)
+    ]
 
     chunked_transcribe(
         mock_backend,
@@ -92,7 +92,10 @@ def test_chunked_transcribe_passes_scaled_max_tokens():
         max_output_tokens_fn=lambda d: int(d * 10),
     )
 
-    # Each 2s chunk → 20 max tokens
+    # Each 2s chunk → 20 max tokens, submitted as a 1-item batch.
     for call in mock_backend.transcribe.call_args_list:
-        args, _ = call
-        assert args[3] == 20
+        (batch,), _ = call
+        assert isinstance(batch, list) and len(batch) == 1
+        req = batch[0]
+        assert isinstance(req, TranscribeRequest)
+        assert req.max_output_tokens == 20
