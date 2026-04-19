@@ -1,10 +1,7 @@
 import importlib
 import platform
 
-import torch
-
 from gemma4_audio.backends.base import InferenceBackend
-from gemma4_audio.backends.transformers import TransformersBackend
 
 
 def _try_import(module_name: str) -> bool:
@@ -16,9 +13,21 @@ def _try_import(module_name: str) -> bool:
         return False
 
 
-BACKEND_REGISTRY: dict[str, type] = {
-    "transformers": TransformersBackend,
-}
+def _cuda_available() -> bool:
+    try:
+        import torch
+
+        return torch.cuda.is_available()
+    except ImportError:
+        return False
+
+
+BACKEND_REGISTRY: dict[str, type] = {}
+
+if _try_import("transformers"):
+    from gemma4_audio.backends.transformers import TransformersBackend
+
+    BACKEND_REGISTRY["transformers"] = TransformersBackend
 
 if _try_import("vllm"):
     from gemma4_audio.backends.vllm import VLLMBackend
@@ -39,13 +48,20 @@ def select_backend(name: str = "auto") -> InferenceBackend:
             raise KeyError(f"Unknown backend '{name}'. Available: {available}")
         return BACKEND_REGISTRY[name]()
 
-    if torch.cuda.is_available() and "vllm" in BACKEND_REGISTRY:
+    if _cuda_available() and "vllm" in BACKEND_REGISTRY:
         return BACKEND_REGISTRY["vllm"]()
 
     if platform.system() == "Darwin" and "mlx" in BACKEND_REGISTRY:
         return BACKEND_REGISTRY["mlx"]()
 
-    return TransformersBackend()
+    if "transformers" in BACKEND_REGISTRY:
+        return BACKEND_REGISTRY["transformers"]()
+
+    available = ", ".join(sorted(BACKEND_REGISTRY.keys())) or "(none)"
+    raise RuntimeError(
+        f"No inference backend installed. Available: {available}. "
+        "Install one via `uv sync --extra {transformers,vllm,mlx}`."
+    )
 
 
 __all__ = ["BACKEND_REGISTRY", "select_backend"]

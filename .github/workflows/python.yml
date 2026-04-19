@@ -46,7 +46,7 @@ jobs:
           key: hf-model-${{ matrix.model }}
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --extra transformers
 
       - name: Install CPU-only PyTorch
         run: uv pip install --reinstall torch torchvision torchcodec --torch-backend=cpu
