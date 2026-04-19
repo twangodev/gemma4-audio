@@ -1,10 +1,9 @@
 import time
 
-import numpy as np
 import torch
 from transformers import AutoModelForMultimodalLM, AutoProcessor
 
-from gemma4_audio.config import TranscriptionResult
+from gemma4_audio.config import TranscribeRequest, TranscriptionResult
 
 
 class TransformersBackend:
@@ -35,20 +34,19 @@ class TransformersBackend:
 
     def transcribe(
         self,
-        audio: np.ndarray,
-        sample_rate: int,
-        prompt: str,
-        max_output_tokens: int = 512,
-    ) -> TranscriptionResult:
+        batch: list[TranscribeRequest],
+    ) -> list[TranscriptionResult]:
         if self._model is None or self._processor is None:
             raise RuntimeError("Call load_model() before transcribe().")
+        return [self._transcribe_one(req) for req in batch]
 
+    def _transcribe_one(self, req: TranscribeRequest) -> TranscriptionResult:
         messages = [
             {
                 "role": "user",
                 "content": [
-                    {"type": "audio", "audio": audio, "sample_rate": sample_rate},
-                    {"type": "text", "text": prompt},
+                    {"type": "audio", "audio": req.audio, "sample_rate": req.sample_rate},
+                    {"type": "text", "text": req.prompt},
                 ],
             }
         ]
@@ -65,7 +63,9 @@ class TransformersBackend:
 
         start = time.perf_counter()
         with torch.inference_mode():
-            outputs = self._model.generate(**inputs, max_new_tokens=max_output_tokens)
+            outputs = self._model.generate(
+                **inputs, max_new_tokens=req.max_output_tokens
+            )
         elapsed = time.perf_counter() - start
 
         tokens_generated = outputs.shape[-1] - input_len

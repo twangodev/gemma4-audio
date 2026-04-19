@@ -1,8 +1,6 @@
 import time
 
-import numpy as np
-
-from gemma4_audio.config import TranscriptionResult
+from gemma4_audio.config import TranscribeRequest, TranscriptionResult
 
 
 class MLXBackend:
@@ -22,22 +20,21 @@ class MLXBackend:
 
     def transcribe(
         self,
-        audio: np.ndarray,
-        sample_rate: int,
-        prompt: str,
-        max_output_tokens: int = 512,
-    ) -> TranscriptionResult:
+        batch: list[TranscribeRequest],
+    ) -> list[TranscriptionResult]:
         if self._model is None or self._processor is None:
             raise RuntimeError("Call load_model() before transcribe().")
+        return [self._transcribe_one(req) for req in batch]
 
+    def _transcribe_one(self, req: TranscribeRequest) -> TranscriptionResult:
         from mlx_vlm import generate
 
         messages = [
             {
                 "role": "user",
                 "content": [
-                    {"type": "audio", "audio": audio, "sample_rate": sample_rate},
-                    {"type": "text", "text": prompt},
+                    {"type": "audio", "audio": req.audio, "sample_rate": req.sample_rate},
+                    {"type": "text", "text": req.prompt},
                 ],
             }
         ]
@@ -48,7 +45,7 @@ class MLXBackend:
 
         start = time.perf_counter()
         response = generate(
-            self._model, self._processor, formatted, max_tokens=max_output_tokens
+            self._model, self._processor, formatted, max_tokens=req.max_output_tokens
         )
         elapsed = time.perf_counter() - start
 

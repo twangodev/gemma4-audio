@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+import numpy as np
+
 DEFAULT_PROMPT = (
     "Transcribe the following speech segment in its original language.\n"
     "* Only output the transcription, with no newlines.\n"
@@ -25,6 +27,15 @@ class EvalConfig:
     prompt: str = field(default=DEFAULT_PROMPT)
     max_output_tokens: int | None = None
     chunk_duration_s: float | None = None
+    batch_size: int = 16
+
+
+@dataclass(frozen=True)
+class TranscribeRequest:
+    audio: np.ndarray
+    sample_rate: int
+    prompt: str
+    max_output_tokens: int
 
 
 @dataclass(frozen=True)
