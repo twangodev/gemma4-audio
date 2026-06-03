@@ -1,0 +1,30 @@
+diff --git a/vllm/model_executor/models/gemma4_unified.py b/vllm/model_executor/models/gemma4_unified.py
+index e5f3784..c548b07 100644
+--- a/vllm/model_executor/models/gemma4_unified.py
++++ b/vllm/model_executor/models/gemma4_unified.py
+@@ -420,14 +420,20 @@ class Gemma4UnifiedForConditionalGeneration(Gemma4ForConditionalGeneration):
+         No audio tower: the per-frame raw features are passed straight
+         through the multimodal embedder, then padding is stripped.
+         """
+-        input_features = audio_input["input_features_padded"].squeeze(1)
+-        input_features_mask = audio_input["input_features_mask"].squeeze(1)
++        # vLLM hands this either a single stacked tensor [n_audios, frames, dim]
++        # (when every audio in the encoder batch shares a frame count) or — for
++        # a ragged batch it cannot stack — a list of per-audio [frames, dim]
++        # tensors. ``list(...)`` normalizes both into an iterable of per-audio
++        # feature tensors. (Upstream assumed only the stacked case and called
++        # ``.squeeze(1)``, which crashes with AttributeError on the list.)
++        features = list(audio_input["input_features_padded"])
++        masks = list(audio_input["input_features_mask"])
+ 
+         target_dtype = self.embed_audio.embedding_projection.weight.dtype
+-        audio_features = self.embed_audio(input_features.to(target_dtype))
+         per_audio: list[torch.Tensor] = []
+-        for enc, mask in zip(audio_features, input_features_mask, strict=True):
+-            per_audio.append(enc[mask])
++        for feat, mask in zip(features, masks, strict=True):
++            embedded = self.embed_audio(feat.unsqueeze(0).to(target_dtype))[0]
++            per_audio.append(embedded[mask.bool()])
+         return per_audio
+ 
+     # ------------------------------------------------------------------ #
