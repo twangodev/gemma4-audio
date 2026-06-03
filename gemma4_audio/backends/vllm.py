@@ -4,12 +4,13 @@ import numpy as np
 
 from gemma4_audio.config import BatchItem, TranscriptionResult
 
-# NOTE: running the Gemma 4 12B (gemma4_unified) with batched audio requires a
-# small fix to vLLM's gemma4_unified._process_audio_input (it assumes a single
-# stacked tensor and crashes on the ragged-batch list). The fix lives in
-# patches/vllm-gemma4-unified-batched-audio.patch and must be applied to the
-# vLLM source the EngineCore subprocess imports (a runtime monkeypatch does not
-# reach that subprocess). Remove once fixed upstream.
+# NOTE: running Gemma 4 with batched audio requires a small fix to vLLM's
+# _process_audio_input for both archs — gemma4_unified (12B) and gemma4_mm
+# (E2B/E4B) — which assume a single stacked tensor and crash on the ragged-batch
+# list vLLM passes when audio frame counts differ. The fix lives in
+# patches/vllm-gemma4-batched-audio.patch and must be applied to the vLLM source
+# the EngineCore subprocess imports (a runtime monkeypatch does not reach that
+# subprocess). Remove once fixed upstream.
 
 
 class VLLMBackend:

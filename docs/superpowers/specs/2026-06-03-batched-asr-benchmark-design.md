@@ -22,12 +22,14 @@ two independent issues, both fixed and verified on librispeech test.clean (16):
 `skip_special_tokens=False` + `parse_thinking_output`.
 
 3. **Batched-audio crash (upstream vllm day-1 bug, no issue filed).**
-   `gemma4_unified._process_audio_input` assumed a single stacked tensor and
-   called `.squeeze(1)`; a ragged batch arrives as a list of `[frames, dim]`
-   tensors → `AttributeError`. Fix normalizes both shapes. **Verified: batched
-   WER == single-sample WER (0.0336), 15/16 transcripts identical.** Will ship as
-   an in-repo monkeypatch (applied when the vllm backend loads) so the fix is
-   version-controlled and survives vllm reinstalls; remove when fixed upstream.
+   `_process_audio_input` assumed a single stacked tensor and called
+   `.squeeze(1)`; a ragged batch arrives as a list of `[frames, dim]` tensors →
+   `AttributeError`. Affects **both** archs: gemma4_unified (12B) and gemma4_mm
+   (E2B/E4B). Fixes normalize the shapes (unified: per-audio embed; mm:
+   pad-and-stack for the audio tower). **Verified batched WER == serial WER**
+   (12B 0.0336, E2B 0.0410). Shipped as `patches/vllm-gemma4-batched-audio.patch`
+   applied to the vLLM source — a runtime monkeypatch can't reach the EngineCore
+   subprocess that runs the model. Remove when fixed upstream.
 
 ## Motivation
 
