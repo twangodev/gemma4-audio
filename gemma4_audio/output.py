@@ -73,6 +73,10 @@ def format_stdout(result: EvalResult) -> str:
         f"Mean:   {m.latency.mean:.2f}s   RTFx: {m.rtfx.mean:.1f}x",
         f"P50:    {m.latency.p50:.2f}s   P95:  {m.latency.p95:.2f}s",
     ]
+    if m.throughput_rtfx is not None:
+        lines.append(
+            f"Throughput: {m.throughput_rtfx:.1f}x (total audio / wall clock)"
+        )
     if m.bleu is not None:
         lines.extend(
             [

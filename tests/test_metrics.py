@@ -27,6 +27,27 @@ def test_insertion_and_deletion():
     assert dele.deletions == 1
 
 
+def test_throughput_rtfx_from_wall_clock():
+    # total audio = 2.0 + 1.0 = 3.0s; wall clock = 1.5s -> 2.0x throughput
+    samples = [
+        compute_sample_metrics("s1", "the cat sat", "the cat sat", 0.5, 2.0),
+        compute_sample_metrics("s2", "hello world", "hello world", 0.3, 1.0),
+    ]
+    corpus = compute_corpus_metrics(
+        samples,
+        ["the cat sat", "hello world"],
+        ["the cat sat", "hello world"],
+        wall_clock_s=1.5,
+    )
+    assert corpus.throughput_rtfx == pytest.approx(2.0)
+
+
+def test_throughput_rtfx_none_without_wall_clock():
+    samples = [compute_sample_metrics("s1", "a b", "a b", 0.5, 2.0)]
+    corpus = compute_corpus_metrics(samples, ["a b"], ["a b"])
+    assert corpus.throughput_rtfx is None
+
+
 def test_corpus_metrics():
     samples = [
         compute_sample_metrics("s1", "the cat sat", "the cat sat", 0.5, 2.0),

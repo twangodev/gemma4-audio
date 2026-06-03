@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from transformers import AutoModelForMultimodalLM, AutoProcessor
 
-from gemma4_audio.config import TranscriptionResult
+from gemma4_audio.config import BatchItem, TranscriptionResult
 
 
 class TransformersBackend:
@@ -78,6 +78,14 @@ class TransformersBackend:
             elapsed_seconds=elapsed,
             tokens_generated=int(tokens_generated),
         )
+
+    def transcribe_batch(
+        self, items: list[BatchItem]
+    ) -> list[TranscriptionResult]:
+        # HF generate has no continuous batching here; transcribe serially.
+        from gemma4_audio.backends.base import loop_transcribe_batch
+
+        return loop_transcribe_batch(self, items)
 
     def cleanup(self) -> None:
         del self._model

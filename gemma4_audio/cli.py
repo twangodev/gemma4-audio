@@ -3,8 +3,7 @@ import argparse
 from gemma4_audio.config import DEFAULT_PROMPT, EvalConfig
 
 
-def parse_args(argv: list[str] | None = None) -> EvalConfig:
-    """Parse CLI arguments and return an EvalConfig."""
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="g4",
         description="Gemma 4 audio toolkit",
@@ -81,15 +80,46 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
             "Auto-activates when audio > 2x this value; no effect on short clips."
         ),
     )
+    eval_parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=16,
+        help=(
+            "Number of (non-chunked) samples to submit per batched inference "
+            "call. The vLLM backend continuous-batches these; transformers/mlx "
+            "fall back to serial. Default 16."
+        ),
+    )
 
-    args = parser.parse_args(argv)
+    publish_parser = subparsers.add_parser(
+        "publish",
+        help="Strip + filter eval results for web redistribution",
+    )
+    publish_parser.add_argument(
+        "--results-dir",
+        default="eval_results",
+        help="Directory of raw eval results ({slug}/results.{json,csv}).",
+    )
+    publish_parser.add_argument(
+        "--out",
+        required=True,
+        help=(
+            "Destination directory. Writes stripped results.json "
+            "(sample_results emptied) and results.csv (reference/hypothesis "
+            "columns dropped) for redistributable datasets only."
+        ),
+    )
 
+    return parser
+
+
+def _config_from_args(args: argparse.Namespace) -> EvalConfig:
     dataset = args.dataset
     split = args.split
     if args.benchmark:
         parts = args.benchmark.split(":", 1)
         if len(parts) != 2:
-            parser.error(
+            raise SystemExit(
                 "--benchmark must be in dataset:split format (e.g. librispeech:test.clean)"
             )
         dataset, split = parts
@@ -102,6 +132,7 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
         quantization=args.quantization,
         limit=args.limit,
         seed=args.seed,
+        output_dir=args.output_dir,
         output_json=args.output_json,
         output_csv=args.output_csv,
         quiet=args.quiet,
@@ -109,11 +140,26 @@ def parse_args(argv: list[str] | None = None) -> EvalConfig:
         prompt=args.prompt,
         max_output_tokens=args.max_output_tokens,
         chunk_duration_s=args.chunk_duration,
+        batch_size=args.batch_size,
     )
 
 
+def parse_args(argv: list[str] | None = None) -> EvalConfig:
+    """Parse `eval` CLI arguments and return an EvalConfig."""
+    return _config_from_args(_build_parser().parse_args(argv))
+
+
 def main(argv: list[str] | None = None) -> None:
-    config = parse_args(argv)
+    args = _build_parser().parse_args(argv)
+
+    if args.command == "publish":
+        from gemma4_audio.publish import publish
+
+        published = publish(args.results_dir, args.out)
+        print(f"Published {len(published)} run(s) to {args.out}")
+        return
+
+    config = _config_from_args(args)
     from gemma4_audio.eval import run_eval
 
     run_eval(config)

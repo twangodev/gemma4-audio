@@ -72,8 +72,14 @@ def compute_corpus_metrics(
     sample_results: list[SampleResult],
     all_references: list[str],
     all_hypotheses: list[str],
+    wall_clock_s: float | None = None,
 ) -> CorpusMetrics:
-    """Compute corpus-level aggregated metrics."""
+    """Compute corpus-level aggregated metrics.
+
+    ``wall_clock_s`` is the total elapsed time for the run; when provided, the
+    aggregate ``throughput_rtfx`` (total audio / wall clock) is computed. This
+    is the meaningful speed metric under batched inference.
+    """
     refs_norm = [normalize_text(r) for r in all_references]
     hyps_norm = [normalize_text(h) for h in all_hypotheses]
 
@@ -113,4 +119,9 @@ def compute_corpus_metrics(
             total=float(np.sum(durations)),
         ),
         num_samples=len(sample_results),
+        throughput_rtfx=(
+            float(np.sum(durations)) / wall_clock_s
+            if wall_clock_s and wall_clock_s > 0
+            else None
+        ),
     )

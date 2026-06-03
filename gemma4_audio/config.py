@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+import numpy as np
+
 DEFAULT_PROMPT = (
     "Transcribe the following speech segment in its original language.\n"
     "* Only output the transcription, with no newlines.\n"
@@ -25,6 +27,17 @@ class EvalConfig:
     prompt: str = field(default=DEFAULT_PROMPT)
     max_output_tokens: int | None = None
     chunk_duration_s: float | None = None
+    batch_size: int = 16
+
+
+@dataclass(eq=False)
+class BatchItem:
+    """One transcription request in a batch (eq=False: holds an ndarray)."""
+
+    audio: np.ndarray
+    sample_rate: int
+    prompt: str
+    max_output_tokens: int
 
 
 @dataclass(frozen=True)
@@ -81,6 +94,10 @@ class CorpusMetrics:
     audio_duration: AudioDurationStats
     num_samples: int
     bleu: float | None = None
+    # Aggregate throughput = total audio seconds / total wall-clock seconds.
+    # The meaningful speed metric under batching (per-sample rtfx conflates
+    # queue wait). None when wall-clock wasn't measured (e.g. serial runs).
+    throughput_rtfx: float | None = None
 
 
 @dataclass(frozen=True)

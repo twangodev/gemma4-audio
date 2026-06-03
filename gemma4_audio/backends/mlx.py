@@ -2,7 +2,7 @@ import time
 
 import numpy as np
 
-from gemma4_audio.config import TranscriptionResult
+from gemma4_audio.config import BatchItem, TranscriptionResult
 
 
 class MLXBackend:
@@ -57,6 +57,14 @@ class MLXBackend:
             elapsed_seconds=elapsed,
             tokens_generated=len(response.split()),
         )
+
+    def transcribe_batch(
+        self, items: list[BatchItem]
+    ) -> list[TranscriptionResult]:
+        # mlx_vlm has no continuous batching; transcribe serially.
+        from gemma4_audio.backends.base import loop_transcribe_batch
+
+        return loop_transcribe_batch(self, items)
 
     def cleanup(self) -> None:
         self._model = None

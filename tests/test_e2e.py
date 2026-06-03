@@ -29,13 +29,13 @@ def test_e2e_with_mock():
     ]
 
     mock_backend = MagicMock()
-    responses = iter(
-        [
-            TranscriptionResult("the cat sat on the mat", 0.1, 10),
-            TranscriptionResult("hello world", 0.05, 5),
-        ]
-    )
-    mock_backend.transcribe.side_effect = lambda *a, **k: next(responses)
+    by_len = {
+        16000: TranscriptionResult("the cat sat on the mat", 0.1, 10),
+        32000: TranscriptionResult("hello world", 0.05, 5),
+    }
+    mock_backend.transcribe_batch.side_effect = lambda items: [
+        by_len[len(it.audio)] for it in items
+    ]
 
     mock_dataset = MagicMock()
     mock_dataset.name = "librispeech"
