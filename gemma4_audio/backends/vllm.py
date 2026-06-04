@@ -1,8 +1,28 @@
+import re
 import time
 
 import numpy as np
 
 from gemma4_audio.config import BatchItem, TranscriptionResult
+
+_CHANNEL_BLOCK = re.compile(r"<\|channel>.*?<channel\|>", re.DOTALL)
+_CHANNEL_TRAILING = re.compile(r"<\|channel>.*\Z", re.DOTALL)
+
+
+def clean_transcript(text: str) -> str:
+    """Strip Gemma 4 thinking-channel scaffolding that survives parsing.
+
+    parse_thinking_output extracts the final answer, but a degenerate
+    generation (the 12B occasionally loops ``<|channel>thought<channel|>``)
+    leaves repeated channel markers in the "answer". Those are never
+    transcription text, so remove complete ``<|channel>...<channel|>`` blocks,
+    any unclosed trailing channel, and stray markers. A clean answer is
+    returned unchanged; a pure loop collapses to an honest empty string.
+    """
+    text = _CHANNEL_BLOCK.sub("", text)
+    text = _CHANNEL_TRAILING.sub("", text)
+    text = text.replace("<|channel>", "").replace("<channel|>", "")
+    return text.strip()
 
 # NOTE: running Gemma 4 with batched audio requires a small fix to vLLM's
 # _process_audio_input for both archs — gemma4_unified (12B) and gemma4_mm
@@ -118,10 +138,12 @@ class VLLMBackend:
         fallback = elapsed / len(outputs)
         results = []
         for output in outputs:
-            answer = parse_thinking_output(output.outputs[0].text)["answer"]
+            answer = clean_transcript(
+                parse_thinking_output(output.outputs[0].text)["answer"]
+            )
             results.append(
                 TranscriptionResult(
-                    text=answer.strip(),
+                    text=answer,
                     elapsed_seconds=self._request_latency(output, fallback),
                     tokens_generated=len(output.outputs[0].token_ids),
                 )
