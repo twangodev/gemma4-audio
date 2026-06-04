@@ -21,9 +21,12 @@ from gemma4_audio.output import (
 def _resolve_max_tokens(config: EvalConfig, duration_s: float) -> int:
     if config.max_output_tokens is not None:
         return config.max_output_tokens
-    # 4 tokens/sec ≈ 240 wpm (above typical speech);
-    # floor of 512 preserves prior behavior on short clips.
-    return max(512, int(duration_s * 4))
+    # Audio-proportional cap: 8 tokens/sec is well above any natural speech
+    # rate, so it never truncates a legitimate transcription, while the small
+    # floor stops a degenerating model (e.g. the 12B on hard audio) from
+    # rambling hundreds of garbage tokens on short clips. A 512 floor let the
+    # model fill the whole budget with hallucinations, tanking WER and speed.
+    return max(64, int(duration_s * 8))
 
 
 def run_eval(

@@ -2,7 +2,21 @@ import numpy as np
 
 from gemma4_audio.config import EvalConfig, TranscriptionResult
 from gemma4_audio.datasets.base import Sample
-from gemma4_audio.eval import run_eval
+from gemma4_audio.eval import _resolve_max_tokens, run_eval
+
+
+def test_max_tokens_is_audio_proportional_without_512_floor():
+    cfg = EvalConfig(model="m")  # auto (max_output_tokens=None)
+    # short clip is bounded low (not the old 512 floor) so a rambling model
+    # can't generate hundreds of garbage tokens
+    assert _resolve_max_tokens(cfg, 2.5) == 64
+    # long clip scales with duration (8 tokens/s is well above any speech rate)
+    assert _resolve_max_tokens(cfg, 30.0) == 240
+
+
+def test_max_tokens_respects_explicit_override():
+    cfg = EvalConfig(model="m", max_output_tokens=256)
+    assert _resolve_max_tokens(cfg, 100.0) == 256
 
 
 class _ListDataset:
