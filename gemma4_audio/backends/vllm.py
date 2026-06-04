@@ -25,12 +25,11 @@ def clean_transcript(text: str) -> str:
     return text.strip()
 
 # NOTE: running Gemma 4 with batched audio requires a small fix to vLLM's
-# _process_audio_input for both archs — gemma4_unified (12B) and gemma4_mm
-# (E2B/E4B) — which assume a single stacked tensor and crash on the ragged-batch
-# list vLLM passes when audio frame counts differ. The fix lives in
-# patches/vllm-gemma4-batched-audio.patch and must be applied to the vLLM source
-# the EngineCore subprocess imports (a runtime monkeypatch does not reach that
-# subprocess). Remove once fixed upstream.
+# _process_audio_input for both archs (gemma4_unified for the 12B, gemma4_mm for
+# E2B/E4B), which assume a single stacked tensor and crash on the ragged-batch
+# list vLLM passes when audio frame counts differ. Patch it in the vLLM source
+# the EngineCore subprocess imports; a runtime monkeypatch does not reach that
+# subprocess. Remove once fixed upstream.
 
 
 class VLLMBackend:
