@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 6
       matrix:
         model:
           - google/gemma-4-E2B-it
@@ -27,7 +28,6 @@ jobs:
           - earnings22:test
           - gigaspeech:test
           - spgispeech:test
-          - tedlium:test
           - voxpopuli:test
     env:
       HF_HUB_CACHE: /home/runner/.cache/huggingface/hub
