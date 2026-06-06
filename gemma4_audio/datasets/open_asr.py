@@ -1,10 +1,16 @@
+import time
 from typing import Iterator
 
 import datasets as hf_datasets
 import numpy as np
+from huggingface_hub.errors import HfHubHTTPError
 
 from gemma4_audio.audio import normalize_audio
 from gemma4_audio.datasets.base import Sample
+
+_RETRY_ATTEMPTS = 5
+_RETRY_BASE_DELAY_S = 5.0
+_RETRY_MAX_DELAY_S = 120.0
 
 
 class OpenASRLeaderboardDataset:
@@ -41,12 +47,27 @@ class OpenASRLeaderboardDataset:
                 f"Invalid split '{split}' for {self.name}. "
                 f"Valid splits: {sorted(self._valid_splits)}"
             )
-        self._data = hf_datasets.load_dataset(
-            self._hf_repo,
-            self._config,
-            split=split,
-            streaming=streaming,
-        ).shuffle(seed=seed)
+        self._data = self._load_with_retry(split, streaming=streaming).shuffle(seed=seed)
+
+    def _load_with_retry(
+        self, split: str, *, streaming: bool
+    ) -> "hf_datasets.Dataset | hf_datasets.IterableDataset":
+        delay = _RETRY_BASE_DELAY_S
+        for attempt in range(_RETRY_ATTEMPTS):
+            try:
+                return hf_datasets.load_dataset(
+                    self._hf_repo,
+                    self._config,
+                    split=split,
+                    streaming=streaming,
+                )
+            except HfHubHTTPError as exc:
+                status = getattr(exc.response, "status_code", None)
+                if status != 429 or attempt == _RETRY_ATTEMPTS - 1:
+                    raise
+                time.sleep(delay)
+                delay = min(delay * 2, _RETRY_MAX_DELAY_S)
+        raise AssertionError("unreachable")
 
     def __iter__(self) -> Iterator[Sample]:
         if self._data is None:
