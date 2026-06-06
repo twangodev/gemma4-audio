@@ -1,3 +1,4 @@
+import random
 import time
 from typing import Iterator
 
@@ -8,7 +9,7 @@ from huggingface_hub.errors import HfHubHTTPError
 from gemma4_audio.audio import normalize_audio
 from gemma4_audio.datasets.base import Sample
 
-_RETRY_ATTEMPTS = 5
+_RETRY_ATTEMPTS = 8
 _RETRY_BASE_DELAY_S = 5.0
 _RETRY_MAX_DELAY_S = 120.0
 
@@ -65,7 +66,7 @@ class OpenASRLeaderboardDataset:
                 status = getattr(exc.response, "status_code", None)
                 if status != 429 or attempt == _RETRY_ATTEMPTS - 1:
                     raise
-                time.sleep(delay)
+                time.sleep(delay + random.uniform(0.0, delay))
                 delay = min(delay * 2, _RETRY_MAX_DELAY_S)
         raise AssertionError("unreachable")
 
