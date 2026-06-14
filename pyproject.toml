@@ -3,32 +3,32 @@ name = "gemma4-audio"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "datasets>=4.8.4",
+    "datasets>=5.0.0",
     "hf-transfer>=0.1.9",
     "jiwer>=4.0.0",
     "librosa>=0.11.0",
     "numpy",
     "pillow>=12.2.0",
     "sacrebleu>=2.6.0",
-    "tqdm>=4.67.3",
+    "tqdm>=4.68.2",
     "whisper-normalizer>=0.1.12",
 ]
 
 [project.optional-dependencies]
 transformers = [
-    "accelerate>=1.13.0",
-    "torch>=2.11.0",
-    "torchcodec>=0.11.0",
-    "torchvision>=0.26.0",
-    "transformers>=5.5.3",
+    "accelerate>=1.14.0",
+    "torch>=2.12.0",
+    "torchcodec>=0.14.0",
+    "torchvision>=0.27.0",
+    "transformers>=5.12.0",
 ]
 vllm = [
-    "vllm[audio]>=0.22",
-    "torchcodec==0.11.*",
-    "transformers>=5.10",
+    "vllm[audio]>=0.23.0",
+    "torchcodec==0.14.*",
+    "transformers>=5.12.0",
 ]
 mlx = [
-    "mlx-vlm>=0.4.4",
+    "mlx-vlm>=0.6.3",
     "torchcodec",
 ]
 quantization = [
@@ -58,6 +58,6 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "pytest>=9.0.3",
-    "ruff>=0.15.10",
+    "pytest>=9.1.0",
+    "ruff>=0.15.17",
 ]
